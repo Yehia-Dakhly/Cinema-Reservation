@@ -1,4 +1,6 @@
 
+using StackExchange.Redis;
+
 namespace Cinema_Reservation
 {
     public class Program
@@ -13,7 +15,13 @@ namespace Cinema_Reservation
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddStackExchangeRedisOutputCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetConnectionString("Redis");
+            });
+            builder.Services.AddSingleton<IConnectionMultiplexer>(
+                ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"))
+            );
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -26,7 +34,7 @@ namespace Cinema_Reservation
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseOutputCache();
 
             app.MapControllers();
 
